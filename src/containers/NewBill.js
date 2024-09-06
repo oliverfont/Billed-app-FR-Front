@@ -56,6 +56,7 @@ export default class NewBill {
     formData.append('vat', e.target.querySelector(`input[data-testid="vat"]`).value);
     formData.append('pct', e.target.querySelector(`input[data-testid="pct"]`).value || 20);
     formData.append('commentary', e.target.querySelector(`textarea[data-testid="commentary"]`).value);
+    formData.append('status', 'pending');
     
     // Ajouter le fichier au FormData
     if (this.file) {
