@@ -85,7 +85,7 @@ export default class {
     if (typeof $('#modaleFileAdmin1').modal === 'function') $('#modaleFileAdmin1').modal('show')
   }
 
-  handleEditTicket(e, bill, bills) {
+  handleEditTicket = (e, bill, bills) => {
     if (this.counter === undefined || this.id !== bill.id) this.counter = 0
     if (this.id === undefined || this.id !== bill.id) this.id = bill.id
     if (this.counter % 2 === 0) {
@@ -98,17 +98,26 @@ export default class {
       this.counter ++
     } else {
       $(`#open-bill${bill.id}`).css({ background: '#0D5AE5' })
-
+  
       $('.dashboard-right-container div').html(`
         <div id="big-billed-icon" data-testid="big-billed-icon"> ${BigBilledIcon} </div>
       `)
       $('.vertical-navbar').css({ height: '120vh' })
       this.counter ++
     }
+    
+    // Vérifier que le nom du fichier est affiché dans le formulaire
+    if (bill.fileName) {
+      $('#file-name').text(bill.fileName)
+    } else {
+      $('#file-name').text('Aucun fichier joint')
+    }
+  
     $('#icon-eye-d').click(this.handleClickIconEye)
     $('#btn-accept-bill').click((e) => this.handleAcceptSubmit(e, bill))
     $('#btn-refuse-bill').click((e) => this.handleRefuseSubmit(e, bill))
   }
+  
 
   handleAcceptSubmit = (e, bill) => {
     const newBill = {
