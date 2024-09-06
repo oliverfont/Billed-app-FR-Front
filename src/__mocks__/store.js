@@ -1,5 +1,5 @@
 const mockedBills = {
-  list() {
+  list: jest.fn(() => {
     return Promise.resolve([{
       "id": "47qAXb6fIm2zOKkLzMro",
       "vat": "80",
@@ -60,12 +60,11 @@ const mockedBills = {
         "type": "Restaurants et bars",
         "fileUrl": "https://test.storage.tld/v0/b/billable-677b6.a…f-1.jpg?alt=media&token=4df6ed2c-12c8-42a2-b013-346c1346f732"
       }])
-
-  },
-  create(bill) {
+  }),
+  create: jest.fn(() => {
     return Promise.resolve({fileUrl: 'https://localhost:3456/images/test.jpg', key: '1234'})
-  },
-  update(bill) {
+  }),
+  update: jest.fn(() => {
     return Promise.resolve({
       "id": "47qAXb6fIm2zOKkLzMro",
       "vat": "80",
@@ -81,13 +80,11 @@ const mockedBills = {
       "email": "a@a",
       "pct": 20
     })
-  },
-}
+  }),
+};
 
 export default {
   bills() {
-    return mockedBills
-    //return {}
+    return mockedBills;
   },
-}
-
+};

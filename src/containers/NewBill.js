@@ -17,66 +17,67 @@ export default class NewBill {
   }
 
   handleChangeFile = e => {
-    e.preventDefault()
+    e.preventDefault();
   
     // Récupérer le fichier téléchargé
-    const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
-    const filePath = e.target.value.split(/\\/g)
-    const fileName = filePath[filePath.length - 1]
-    
+    const file = e.target.files[0];
+    const filePath = e.target.value.split(/\\/g);
+    const fileName = filePath[filePath.length - 1];
+  
     // Vérification de l'extension du fichier
-    const allowedExtensions = ['jpg', 'jpeg', 'png']
-    const fileExtension = fileName.split('.').pop().toLowerCase()
+    const allowedExtensions = ['jpg', 'jpeg', 'png'];
+    const fileExtension = fileName.split('.').pop().toLowerCase();
   
-    // Si l'extension est invalide, afficher une alerte et réinitialiser le champ
     if (!allowedExtensions.includes(fileExtension)) {
-      alert('Veuillez sélectionner un fichier au format .jpg, .jpeg ou .png.')
-      e.target.value = ''  // Réinitialiser le champ de fichier
-      return
+      alert('Veuillez sélectionner un fichier au format .jpg, .jpeg ou .png.');
+      e.target.value = ''; // Réinitialiser le champ de fichier
+      return;
     }
-  
-    const formData = new FormData()
-    const email = JSON.parse(localStorage.getItem("user")).email
-    formData.append('file', file)
-    formData.append('email', email)
-  
-    this.store
-      .bills()
-      .create({
-        data: formData,
-        headers: {
-          noContentType: true
-        }
-      })
-      .then(({ fileUrl, key }) => {
-        this.billId = key
-        this.fileUrl = fileUrl
-        this.fileName = fileName
-      })
-      .catch(error => console.error(error))
-  }
-  
-    handleSubmit = e => {
-    e.preventDefault()
-    console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
-    const email = JSON.parse(localStorage.getItem("user")).email
-    const bill = {
-      email,
-      type: e.target.querySelector(`select[data-testid="expense-type"]`).value,
-      name:  e.target.querySelector(`input[data-testid="expense-name"]`).value,
-      amount: parseInt(e.target.querySelector(`input[data-testid="amount"]`).value),
-      date:  e.target.querySelector(`input[data-testid="datepicker"]`).value,
-      vat: e.target.querySelector(`input[data-testid="vat"]`).value,
-      pct: parseInt(e.target.querySelector(`input[data-testid="pct"]`).value) || 20,
-      commentary: e.target.querySelector(`textarea[data-testid="commentary"]`).value,
-      fileUrl: this.fileUrl,
-      fileName: this.fileName,
-      status: 'pending'
-    }
-    this.updateBill(bill)
-    this.onNavigate(ROUTES_PATH['Bills'])
-  }
 
+    // Sauvegarder le fichier et le nom du fichier
+    this.fileName = fileName;
+    this.file = file;  // On stocke le fichier dans une variable pour plus tard
+  };
+  
+  handleSubmit = e => {
+    e.preventDefault();
+  
+    console.log('handleSubmit called');
+  
+    const email = JSON.parse(localStorage.getItem("user")).email;
+
+    // Créer un FormData pour envoyer toutes les données en une seule requête
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('type', e.target.querySelector(`select[data-testid="expense-type"]`).value);
+    formData.append('name', e.target.querySelector(`input[data-testid="expense-name"]`).value);
+    formData.append('amount', e.target.querySelector(`input[data-testid="amount"]`).value);
+    formData.append('date', e.target.querySelector(`input[data-testid="datepicker"]`).value);
+    formData.append('vat', e.target.querySelector(`input[data-testid="vat"]`).value);
+    formData.append('pct', e.target.querySelector(`input[data-testid="pct"]`).value || 20);
+    formData.append('commentary', e.target.querySelector(`textarea[data-testid="commentary"]`).value);
+    
+    // Ajouter le fichier au FormData
+    if (this.file) {
+      formData.append('file', this.file);
+    }
+
+    // Créer la note de frais avec les données et le fichier
+    this.store.bills().create({
+      data: formData,
+      headers: {
+        noContentType: true // Laisser le navigateur gérer Content-Type pour FormData
+      }
+    })
+    .then(() => {
+      console.log('Bill successfully created');
+      this.onNavigate(ROUTES_PATH['Bills']);
+    })
+    .catch(error => {
+      console.error('Error while creating bill:', error);
+    });
+  };
+  
   // not need to cover this function by tests
   updateBill = (bill) => {
     if (this.store) {

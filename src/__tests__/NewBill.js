@@ -16,13 +16,13 @@ describe("Given I am connected as an employee", () => {
   let onNavigate;
 
   beforeEach(() => {
-    // Configurer le mock du localStorage
+    // Configuration du mock du localStorage
     Object.defineProperty(window, 'localStorage', { value: localStorageMock })
     window.localStorage.setItem('user', JSON.stringify({
       type: 'Employee'
     }))
 
-    // Préparer la structure du DOM pour router
+    // Préparation de la structure du DOM pour le router
     document.body.innerHTML = '<div id="root"></div>'
     router()
 
@@ -34,7 +34,7 @@ describe("Given I am connected as an employee", () => {
   describe("When I am on NewBill Page", () => {
     test("Then the NewBill form should be displayed", () => {
       document.body.innerHTML = NewBillUI()  // Générer le DOM via NewBillUI
-      expect(screen.getByTestId("form-new-bill")).toBeTruthy()  // Vérifie que le formulaire est présent
+      expect(screen.getByTestId("form-new-bill")).toBeTruthy()  // Vérification de la présence du formulaire
     })
   })
 
@@ -44,9 +44,9 @@ describe("Given I am connected as an employee", () => {
 
       const newBill = new NewBill({ document, onNavigate, store: mockStore, localStorage: window.localStorage })
 
-      // Sélectionner l'input du fichier
+      // Sélection de l'input du fichier
       const fileInput = screen.getByTestId("file")
-      expect(fileInput).toBeTruthy()  // Vérifier que l'input file est présent
+      expect(fileInput).toBeTruthy()  // Vérification de la présence de l'input file
 
       const handleChangeFile = jest.fn(newBill.handleChangeFile)
       fileInput.addEventListener("change", handleChangeFile)
@@ -65,9 +65,9 @@ describe("Given I am connected as an employee", () => {
 
       const newBill = new NewBill({ document, onNavigate, store: mockStore, localStorage: window.localStorage })
 
-      // Sélectionner l'input du fichier
+      // Sélection de l'input du fichier
       const fileInput = screen.getByTestId("file")
-      expect(fileInput).toBeTruthy()  // Vérifier que l'input file est présent
+      expect(fileInput).toBeTruthy()  // Vérification de la présence de l'input file
 
       const handleChangeFile = jest.fn(newBill.handleChangeFile)
       fileInput.addEventListener("change", handleChangeFile)
@@ -87,16 +87,16 @@ describe("Given I am connected as an employee", () => {
 
       const newBill = new NewBill({ document, onNavigate, store: mockStore, localStorage: window.localStorage })
 
-      // Sélectionner le formulaire
+      // Sélection du formulaire
       const form = screen.getByTestId("form-new-bill")
-      expect(form).toBeTruthy()  // Vérifier que le formulaire est présent
+      expect(form).toBeTruthy()  // Vérification de la présence du formulaire
 
       const handleSubmit = jest.fn(newBill.handleSubmit)
       form.addEventListener("submit", handleSubmit)
 
       fireEvent.submit(form)
 
-      // Vérifier que la fonction de soumission a été appelée
+      // Vérification que la fonction de soumission a été appelée
       expect(handleSubmit).toHaveBeenCalled()
 
       // Simuler la redirection après soumission
@@ -106,5 +106,41 @@ describe("Given I am connected as an employee", () => {
   })
 
   // Test d'intégration POST
-  
+  describe("When I submit a new bill", () => {
+    test("Then a POST request is sent to the mock API", async () => {
+      document.body.innerHTML = NewBillUI()  // Générer le DOM via NewBillUI
+
+      const newBill = new NewBill({
+        document,
+        onNavigate,
+        store: mockStore,  // Utilisation du mockStore
+        localStorage: window.localStorage
+      })
+
+      // Spy sur la méthode create de mockStore.bills
+      const createSpy = jest.spyOn(mockStore.bills(), 'create')
+
+      // Remplir le formulaire avec des données valides
+      fireEvent.change(screen.getByTestId("expense-name"), { target: { value: "Vol Paris Londres" } })
+      fireEvent.change(screen.getByTestId("datepicker"), { target: { value: "2023-09-15" } })
+      fireEvent.change(screen.getByTestId("amount"), { target: { value: "348" } })
+      fireEvent.change(screen.getByTestId("pct"), { target: { value: "20" } })
+      fireEvent.change(screen.getByTestId("file"), {
+        target: {
+          files: [new File(["test"], "test.jpg", { type: "image/jpeg" })]
+        }
+      })
+
+      // Simuler la soumission du formulaire
+      const form = screen.getByTestId("form-new-bill")
+      fireEvent.submit(form)
+
+      // Vérification que la méthode create du mock a été appelée
+      expect(createSpy).toHaveBeenCalled()
+
+      // Simuler la redirection après soumission
+      await waitFor(() => screen.getByText("Mes notes de frais"))
+      expect(screen.getByText("Mes notes de frais")).toBeTruthy()
+    })
+  })
 })
