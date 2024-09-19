@@ -18,6 +18,26 @@ jest.mock("../app/Store", () => mockStore)
 
 describe('Given I am connected as an Employee', () => {
 
+  describe("When I am on Bills Page", () => {
+    test("Then bill icon in vertical layout should be highlighted", async () => {
+
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee'
+      }))
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.append(root)
+      router()
+      window.onNavigate(ROUTES_PATH.Bills)
+      await waitFor(() => screen.getByTestId('icon-window'))
+      const windowIcon = screen.getByTestId('icon-window')
+      //to-do write expect expression
+
+    })
+  })
+
+
   describe('When I am on Bills page and it is loading', () => {
     test('Then, Loading page should be rendered', () => {
       document.body.innerHTML = BillsUI({ loading: true })
