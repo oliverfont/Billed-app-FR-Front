@@ -32,8 +32,7 @@ describe('Given I am connected as an Employee', () => {
       window.onNavigate(ROUTES_PATH.Bills)
       await waitFor(() => screen.getByTestId('icon-window'))
       const windowIcon = screen.getByTestId('icon-window')
-      //to-do write expect expression
-
+      expect(windowIcon.classList.contains('active-icon')).toBe(true)
     })
   })
 
