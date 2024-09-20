@@ -13,6 +13,7 @@ export default class NewBill {
     this.fileUrl = null
     this.fileName = null
     this.billId = null
+    this.errorMessage = this.document.querySelector('.error-message')
     new Logout({ document, localStorage, onNavigate })
   }
 
@@ -29,12 +30,14 @@ export default class NewBill {
     const fileExtension = fileName.split('.').pop().toLowerCase();
   
     if (!allowedExtensions.includes(fileExtension)) {
-      alert('Veuillez sélectionner un fichier au format .jpg, .jpeg ou .png.');
+      this.errorMessage.textContent = 'Veuillez sélectionner un fichier au format .jpg, .jpeg ou .png.';  // Afficher le message d'erreur
+      this.errorMessage.style.display = 'block';  // Rendre le message visible
       e.target.value = ''; // Réinitialiser le champ de fichier
       return;
     }
-
-    // Sauvegarder le fichier et le nom du fichier
+  
+    // Cacher le message d'erreur si l'extension est correcte
+    this.errorMessage.style.display = 'none';
     this.fileName = fileName;
     this.file = file;  // On stocke le fichier dans une variable pour plus tard
   };
@@ -42,11 +45,8 @@ export default class NewBill {
   handleSubmit = e => {
     e.preventDefault();
   
-    console.log('handleSubmit called');
-  
     const email = JSON.parse(localStorage.getItem("user")).email;
 
-    // Créer un FormData pour envoyer toutes les données en une seule requête
     const formData = new FormData();
     formData.append('email', email);
     formData.append('type', e.target.querySelector(`select[data-testid="expense-type"]`).value);
@@ -58,20 +58,17 @@ export default class NewBill {
     formData.append('commentary', e.target.querySelector(`textarea[data-testid="commentary"]`).value);
     formData.append('status', 'pending');
     
-    // Ajouter le fichier au FormData
     if (this.file) {
       formData.append('file', this.file);
     }
 
-    // Créer la note de frais avec les données et le fichier
     this.store.bills().create({
       data: formData,
       headers: {
-        noContentType: true // Laisser le navigateur gérer Content-Type pour FormData
+        noContentType: true
       }
     })
     .then(() => {
-      console.log('Bill successfully created');
       this.onNavigate(ROUTES_PATH['Bills']);
     })
     .catch(error => {
@@ -79,7 +76,6 @@ export default class NewBill {
     });
   };
   
-  // not need to cover this function by tests
   updateBill = (bill) => {
     if (this.store) {
       this.store

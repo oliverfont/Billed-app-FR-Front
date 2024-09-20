@@ -57,23 +57,53 @@ describe("Given I am connected as an employee", () => {
       expect(handleChangeFile).toHaveBeenCalled();
       expect(fileInput.value).toBe("");  // Le fichier ne doit pas être accepté
     });
+  });
 
-    test("Then a valid file should be accepted", async () => {
+  describe("When I upload a file with the wrong extension", () => {
+    test("Then the file should not be accepted and an error message should be displayed", () => {
       document.body.innerHTML = NewBillUI();  // Générer le DOM via NewBillUI
-
+  
       const newBill = new NewBill({ document, onNavigate, store: mockStore, localStorage: window.localStorage });
-
+  
       // Sélection de l'input du fichier
       const fileInput = screen.getByTestId("file");
       expect(fileInput).toBeTruthy();  // Vérification de la présence de l'input file
-
+  
       const handleChangeFile = jest.fn(newBill.handleChangeFile);
       fileInput.addEventListener("change", handleChangeFile);
-
+  
+      // Simuler l'upload d'un fichier avec une mauvaise extension
+      const file = new File(["test"], "test.txt", { type: "text/plain" });
+      fireEvent.change(fileInput, { target: { files: [file] }});
+  
+      // Vérifier que le fichier est refusé
+      expect(handleChangeFile).toHaveBeenCalled();
+      expect(fileInput.value).toBe("");  // Le fichier ne doit pas être accepté
+  
+      // Vérifier que le message d'erreur est affiché
+      const errorMessage = screen.getByText('Veuillez sélectionner un fichier au format .jpg, .jpeg ou .png.');
+      expect(errorMessage).toBeTruthy();
+      expect(errorMessage.style.display).toBe('block');
+    });
+  });
+  
+  describe("When I upload a file with the right extension", () => {
+    test("Then a valid file should be accepted", async () => {
+      document.body.innerHTML = NewBillUI();  // Générer le DOM via NewBillUI
+  
+      const newBill = new NewBill({ document, onNavigate, store: mockStore, localStorage: window.localStorage });
+  
+      // Sélection de l'input du fichier
+      const fileInput = screen.getByTestId("file");
+      expect(fileInput).toBeTruthy();  // Vérification de la présence de l'input file
+  
+      const handleChangeFile = jest.fn(newBill.handleChangeFile);
+      fileInput.addEventListener("change", handleChangeFile);
+  
       // Simuler l'upload d'un fichier valide
       const file = new File(["image"], "test.jpg", { type: "image/jpeg" });
       fireEvent.change(fileInput, { target: { files: [file] }});
-
+  
       expect(handleChangeFile).toHaveBeenCalled();
       expect(fileInput.files[0].name).toBe("test.jpg");  // Le fichier doit être accepté
     });
